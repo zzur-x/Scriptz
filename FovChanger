@@ -1,0 +1,117 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+local MIN_FOV = 30
+local MAX_FOV = 120
+local DEFAULT_FOV = camera.FieldOfView
+local FRAME_WIDTH = 200
+local FRAME_HEIGHT = 100
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FovChanger"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, FRAME_WIDTH, 0, FRAME_HEIGHT)
+mainFrame.Position = UDim2.new(0.5, -FRAME_WIDTH / 2, 0.5, -FRAME_HEIGHT / 2)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+mainFrame.BorderSizePixel = 1
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "Title"
+titleLabel.Size = UDim2.new(1, 0, 0, 20)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+titleLabel.BorderColor3 = Color3.fromRGB(80, 80, 80)
+titleLabel.BorderSizePixel = 0
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Text = "FOV Changer by zurx"
+titleLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+titleLabel.TextScaled = false
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+titleLabel.ZIndex = 2
+
+local fovInput = Instance.new("TextBox")
+fovInput.Name = "FovInput"
+fovInput.Size = UDim2.new(0.6, -5, 0, 30)
+fovInput.Position = UDim2.new(0.05, 0, 0.5, -15)
+fovInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+fovInput.BorderColor3 = Color3.fromRGB(100, 100, 100)
+fovInput.BorderSizePixel = 1
+fovInput.Font = Enum.Font.SourceSans
+fovInput.PlaceholderText = "Enter FOV (" .. MIN_FOV .. "-" .. MAX_FOV .. ")"
+fovInput.Text = tostring(DEFAULT_FOV)
+fovInput.TextColor3 = Color3.fromRGB(200, 200, 200)
+fovInput.TextScaled = false
+fovInput.TextSize = 14
+fovInput.ClearTextOnFocus = false
+fovInput.ZIndex = 2
+
+local applyButton = Instance.new("TextButton")
+applyButton.Name = "ApplyButton"
+applyButton.Size = UDim2.new(0.3, -5, 0, 30)
+applyButton.Position = UDim2.new(0.65, 0, 0.5, -15)
+applyButton.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+applyButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+applyButton.BorderSizePixel = 1
+applyButton.Font = Enum.Font.SourceSansBold
+applyButton.Text = "Apply"
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.TextScaled = false
+applyButton.TextSize = 20
+applyButton.ZIndex = 2
+
+local function applyFov()
+    local inputText = fovInput.Text
+    local number = tonumber(inputText)
+
+    if number then
+        number = math.clamp(number, MIN_FOV, MAX_FOV)
+        camera.FieldOfView = number
+        fovInput.Text = tostring(number)
+    else
+        fovInput.Text = tostring(camera.FieldOfView)
+    end
+end
+
+applyButton.MouseButton1Click:Connect(applyFov)
+
+fovInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        applyFov()
+    else
+        local number = tonumber(fovInput.Text)
+        if not number then
+            fovInput.Text = tostring(camera.FieldOfView)
+        end
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.RightAlt then
+        screenGui.Enabled = not screenGui.Enabled
+    end
+end)
+
+titleLabel.Parent = mainFrame
+fovInput.Parent = mainFrame
+applyButton.Parent = mainFrame
+mainFrame.Parent = screenGui
+screenGui.Parent = playerGui
+
+game:GetService("StarterGui"):SetCore("SendNotification", { 
+	Title = "Made by zurx ";
+	Text = "RightAlt to turn OFF/ON the GUI!";
+	Icon = ""})
+Duration = 6
